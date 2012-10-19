@@ -136,18 +136,19 @@ Please make sure you have pulled and pushed all code before deploying:
 
           desc "Mark the current code as a staging/qa release"
           task :tag_staging do
-            set :local_branch, `git branch --no-color 2> /dev/null | sed -e '/^[^*]/d'`.gsub(/\* /, '').chomp
+            branch = 'master'
             remote = fetch(:remote, 'origin')
 
-            current_sha = `git log --pretty=format:%H HEAD -1`
+            current_sha = `git log --pretty=format:%H #{remote}/#{branch} -1`
             last_staging_tag_sha = if last_staging_tag
                                      `git log --pretty=format:%H #{last_staging_tag} -1`
                                    end
 
             if last_staging_tag_sha == current_sha
-              puts "Not re-tagging staging because latest tag (#{last_staging_tag}) already points to #{remote}/#{local_branch}"
+              puts "Not re-tagging staging because latest tag (#{last_staging_tag}) already points to #{remote}/#{branch}"
               new_staging_tag = last_staging_tag
             else
+              puts "I intend to tag the staging branch with the code at #{current_sha}, from #{remote}/#{branch}."
               new_staging_tag = next_staging_tag
               puts "Tagging current branch for deployment to staging as '#{new_staging_tag}'"
               system "git tag -a -m 'tagging current code for deployment to staging' #{new_staging_tag} #{current_sha}"
