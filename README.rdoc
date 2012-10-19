@@ -35,8 +35,6 @@ Then update config/deploy.rb
     require 'capistrano/ext/multistage'
     require 'capistrano/gitflow' # needs to come after multistage
 
-More info at: http://rubygems.org/gems/capistrano-gitflow
-
 == DETAILS
 
 After experimenting with several workflows for deployment in git, I've finally found one I really like.
