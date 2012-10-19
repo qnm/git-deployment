@@ -75,7 +75,7 @@ Please make sure you have pulled and pushed all code before deploying:
               if respond_to?("tag_#{stage}")
                 send "tag_#{stage}" 
 
-                system "git push #{remote} #{branch}"
+                system "git push --tags #{remote} #{branch}"
                 if $? != 0
                   abort "git push failed"
                 end
@@ -133,7 +133,7 @@ Please make sure you have pulled and pushed all code before deploying:
             set :local_branch, `git branch --no-color 2> /dev/null | sed -e '/^[^*]/d'`.gsub(/\* /, '').chomp
             remote = fetch(:remote, 'origin')
 
-            current_sha = `git log --pretty=format:%H HEAD -1`
+            current_sha = `git log --pretty=format:%H #{remote}/#{local_branch} -1`
             last_staging_tag_sha = if last_staging_tag
                                      `git log --pretty=format:%H #{last_staging_tag} -1`
                                    end
@@ -142,6 +142,7 @@ Please make sure you have pulled and pushed all code before deploying:
               puts "Not re-tagging staging because latest tag (#{last_staging_tag}) already points to #{remote}/#{local_branch}"
               new_staging_tag = last_staging_tag
             else
+              puts "I intend to tag the staging branch with the code at #{current_sha}, from #{remote}/#{local_branch}."
               new_staging_tag = next_staging_tag
               puts "Tagging current branch for deployment to staging as '#{new_staging_tag}'"
               system "git tag -a -m 'tagging current code for deployment to staging' #{new_staging_tag} #{current_sha}"
