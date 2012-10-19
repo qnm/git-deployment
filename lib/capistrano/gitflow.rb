@@ -139,9 +139,9 @@ Please make sure you have pulled and pushed all code before deploying:
 
           desc "Mark the current code as a staging/qa release"
           task :tag_staging do
-            current_sha = `git log --pretty=format:%H #{remote}/#{local_branch} -1`
             set :local_branch, `git branch --no-color 2> /dev/null | sed -e '/^[^*]/d'`.gsub(/\* /, '').chomp
             remote = fetch(:remote, 'origin')
+            current_sha = `git log --pretty=format:%H #{remote}/#{local_branch} -1`
 
             last_staging_tag_sha = if last_staging_tag
                                      `git log --pretty=format:%H #{last_staging_tag} -1`
