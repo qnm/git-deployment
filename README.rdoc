@@ -45,8 +45,8 @@ After experimenting with several workflows for deployment in git, I've finally f
 * You can only push a staging tag to production. This helps to enforce QA of all pushes to production.
 * If you specify :remote and in your Cap config, you can use the latest commit from that remote instead of the origin default.
   E.g. set :remote, 'upstream'
-* You can specify :gitflow_check, false to tag and push the current master as staging without comparing your local commits.
-  E.g. set :gitflow_check, false
+* You can specify :local_must_match_remote, false to tag and push the remote master as staging without comparing your local commits.
+  E.g. set :local_must_match_remote, false
 
 
 === PUSH TO STAGING

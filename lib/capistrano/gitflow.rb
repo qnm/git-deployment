@@ -46,13 +46,14 @@ module Capistrano
 
           task :verify_up_to_date do
             remote = fetch(:remote, 'origin')
-            if using_git? && fetch(:gitflow_check, true)
+            if using_git? && fetch(:local_must_match_remote, true)
               set :local_branch, `git branch --no-color 2> /dev/null | sed -e '/^[^*]/d'`.gsub(/\* /, '').chomp
               set :local_sha, `git log --pretty=format:%H HEAD -1`.chomp
-              set :origin_sha, `git log --pretty=format:%H #{remote}/#{local_branch} -1`
-              unless local_sha == origin_sha
+              set :remote_sha, `git log --pretty=format:%H #{remote}/#{local_branch} -1`
+              unless local_sha == remote_sha
                 abort """
-Your #{local_branch} branch is not up to date with #{remote}/#{local_branch} (Local #{local_sha} doesn't match remote #{origin_sha})
+Your #{local_branch} branch is not up to date with #{remote}/#{local_branch}:
+Your local SHA #{local_sha} doesn't match remote SHA #{remote_sha}.
 Please make sure you have pulled and pushed all code before deploying:
 
     git pull origin #{local_branch}
@@ -75,7 +76,7 @@ Please make sure you have pulled and pushed all code before deploying:
               if respond_to?("tag_#{stage}")
                 send "tag_#{stage}" 
 
-                system "git push --tags #{remote} #{branch}"
+                system "git push --tags #{remote} #{remote_branch}"
                 if $? != 0
                   abort "git push failed"
                 end
@@ -148,7 +149,7 @@ Please make sure you have pulled and pushed all code before deploying:
               system "git tag -a -m 'tagging current code for deployment to staging' #{new_staging_tag} #{current_sha}"
             end
 
-            set :branch, new_staging_tag
+            set :remote_branch, new_staging_tag
           end
 
           desc "Push the approved tag to production. Pass in tag to deploy with '-s tag=staging-YYYY-MM-DD-X-feature'."
@@ -182,7 +183,7 @@ Please make sure you have pulled and pushed all code before deploying:
               system "git tag -a -m 'tagging current code for deployment to production' #{new_production_tag} #{promote_to_production_tag}"
             end
 
-            set :branch, new_production_tag
+            set :remote_branch, new_production_tag
           end
         end
 
