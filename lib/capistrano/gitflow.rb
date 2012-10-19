@@ -1,5 +1,5 @@
 require 'capistrano'
-require File.join(File.dirname(__FILE__), 'gitflow', 'natcmp')
+require 'capistrano/gitflow/natcmp'
 require 'stringex'
 
 module Capistrano
@@ -11,10 +11,16 @@ module Capistrano
 
         namespace :gitflow do
           def last_tag_matching(pattern)
-            # search for most recent (chronologically) tag matching the passed pattern, then get the name of that tag.
-            last_tag = `git describe --exact-match --match '#{pattern}' \`git log --tags='#{pattern}*' --format="%H" -1\``.chomp
-            return nil if last_tag == ''
-            return last_tag
+            matching_tags = `git tag -l '#{pattern}'`.split
+            matching_tags.sort! do |a,b|
+              String.natcmp(b, a, true)
+            end
+
+            last_tag = if matching_tags.length > 0
+                         matching_tags[0]
+                       else
+                         nil
+                       end
           end
 
           def last_staging_tag()
