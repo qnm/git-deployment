@@ -1,6 +1,7 @@
 require 'capistrano'
 require File.join(File.dirname(__FILE__), 'gitflow', 'natcmp')
 require 'stringex'
+require 'launchy'
 
 module Capistrano
   class Gitflow
@@ -89,6 +90,8 @@ Please make sure you have pulled and pushed all code before deploying:
 
           desc "Show log between most recent staging tag (or given tag=XXX) and last production release."
           task :commit_log do
+            remote = fetch(:remote, 'origin')
+
             from_tag = if stage == :production
                          last_production_tag
                        elsif stage == :staging
@@ -117,14 +120,19 @@ Please make sure you have pulled and pushed all code before deploying:
             else
                 # default compare command
                 # be awesome for github
-                if `git config remote.origin.url` =~ /git@github.com:(.*)\/(.*).git/
-                    command = "open https://github.com/#{$1}/#{$2}/compare/#{from_tag}...#{to_tag}"
+                if `git config remote.#{remote}.url` =~ /git@github.com:(.*)\/(.*).git/
+                    url = "https://github.com/#{$1}/#{$2}/compare/#{from_tag}...#{to_tag}"
                 else
                     command = "git log #{from_tag}..#{to_tag}"
                 end
             end
-            puts "Displaying commits from #{from_tag} to #{to_tag} via:\n#{command}"
-            system command
+            puts "Displaying commits from #{from_tag} to #{to_tag}"
+            if (url)
+              ::Launchy.open(url)
+            else
+              puts "Via: #{command}"
+              system command
+            end
 
             puts ""
           end
